@@ -27,7 +27,7 @@ class TestCommand extends Command
     public function handle()
     {
         //
-        $data = ['name' => 'Jon Doe', 'phone' => '12345678901'];
+        $data = ['name' => 'PHP Tutoriais', 'phone' => '+5511987654321'];
         TestQueue::dispatch($data);
     }
 }
