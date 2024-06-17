@@ -1,0 +1,59 @@
+# services declaration.
+services:
+  # MessageBroker
+  rabbit:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-server
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - internal
+    volumes:
+      - rabbitmq-conf:/etc/rabbitmq/rabbitmq.conf
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  # Web Application
+  app:
+    build:
+      args:
+        user: sammy
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: php-tutoriais/php-8.2-fpm:composer
+    container_name: app
+    restart: unless-stopped
+    depends_on:
+      - rabbit
+    volumes:
+      - .:/app
+    networks:
+      - internal
+    # command:
+    #   - php
+    #   - artisan
+    #   - rabbitmq:receive
+    # command: /bin/bash -c "composer install && php artisan rabbitmq:receive"
+  worker:
+    image: php-tutoriais/php-8.2-fpm:composer
+    container_name: worker
+    restart: unless-stopped
+    depends_on:
+      - rabbit
+    volumes:
+      - ./src:/app
+    networks:
+      - internal
+    command:
+      - php
+      - artisan
+      - queue:work
+    # command: /bin/bash -c "composer install && php artisan rabbitmq:receive"    
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  rabbitmq-conf:    
+  rabbitmq-data:    
